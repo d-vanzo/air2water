@@ -1,18 +1,94 @@
+SUBROUTINE print_Help
+    WRITE(*,*)''
+    WRITE(*,*)'usage:'
+    WRITE(*,*)'   air2water [options ...]'
+    WRITE(*,*)''
+    WRITE(*,*)'options:'
+    WRITE(*,*)'   -f <string> read input data from <string>'
+    WRITE(*,*)'   -h          display this information'
+    WRITE(*,*)'    in case of no arguments, default inputfile <input.txt> is used'
+    WRITE(*,*)''
+RETURN
+END SUBROUTINE
+
+SUBROUTINE print_ByeBye
+    WRITE(*,*)"***************************************************************************"
+    WRITE(*,*)"*   that's it! (mailto: s.piccolroaz@unitn.it, marco.toffolon@unitn.it)   *"
+    WRITE(*,*)"***************************************************************************"
+RETURN
+END SUBROUTINE
+
+
+!-------------------------------------------------------------------------------
+!               PARSE COMMAND DATA
+!-------------------------------------------------------------------------------
+SUBROUTINE parse_command_args
+
+USE commondata
+
+IMPLICIT NONE
+INTEGER:: cnt, i, len, status
+character:: c*30
+LOGICAL:: knownArg = .true.
+
+cnt = command_argument_count ()
+!write (*,*) 'number of command arguments = ', cnt
+
+IF (cnt == 0) THEN
+    inputfile = 'input.txt'
+    WRITE (*,*) 'default input file: ', inputfile
+ELSEIF (cnt == 1) THEN
+    CALL get_command_argument (cnt, c, len, status)
+    IF ((status .eq. 0).and.(c (1:len) .eq. "-h")) THEN
+        CALL print_Help
+        CALL print_ByeBye
+        STOP
+    ELSE
+        knownArg = .false.
+    ENDIF
+ELSEIF (cnt == 2) THEN
+    CALL get_command_argument (1, c, len, status)
+    IF ((status .eq. 0).and.(c (1:len) .eq. "-f")) THEN
+        CALL get_command_argument (2, c, len, status)
+        inputfile = c(1:len)
+        WRITE (*,*) 'input file: ', inputfile
+    ELSE
+        knownArg = .false.
+    ENDIF
+ENDIF
+
+IF (knownArg .eqv. .false.) THEN
+    WRITE (*,*) ' Sorry, but the given command arguments are not recognized... please try with [-h] flag.'
+    CALL print_ByeBye
+    STOP
+ENDIF
+
+! DO i = 1, cnt
+!     CALL get_command_argument (i, c, len, status)
+!     IF (status .ne. 0) THEN
+!         WRITE (*,*) 'get_command_argument failed: status = ', status, ' arg = ', i
+!         STOP
+!     END IF
+!         WRITE (*,*) 'command arg ', i, ' = ', c (1:len)
+! END DO
+
+RETURN
+END
 !-------------------------------------------------------------------------------
 !				SETUP OF THE CALIBRATION 
 !-------------------------------------------------------------------------------
 SUBROUTINE read_calibration
 
 USE commondata
-USE ifport              ! necessario per il comando makedirqq
+!USE ifport              ! necessario per il comando makedirqq
 
 IMPLICIT NONE
 INTEGER:: i, j, status
 CHARACTER(LEN=1) :: string
-LOGICAL result          ! necessario per il comando makedirqq
+LOGICAL:: result          ! necessario per il comando makedirqq
 
 ! read input information
-OPEN(unit=1,file='input.txt',status='old',action='read')
+OPEN(unit=1,file=inputfile,status='old',action='read')
 READ(1,*)		! header
 READ(1,*) name
 READ(1,*) air_station
@@ -34,7 +110,16 @@ CLOSE(1)
 station=TRIM(air_station)//'_'//TRIM(water_station)
 
 folder = TRIM(name)//'/output_'//TRIM(version)//'/'
-result=makedirqq(folder)
+
+! subfolder creation is system-specific
+#ifdef _WIN32
+  call system('mkdir ' // TRIM(name)//'\output_'//TRIM(version)//'\')
+#else
+  call system('mkdir -p ' // folder)
+#endif
+
+
+!result=makedirqq(folder)
     
 WRITE(*,*) 'Objective function ',fun_obj
 
@@ -72,7 +157,7 @@ IF (run .eq. 'PSO' .or. run .eq. 'LATHYP') THEN
         
     n_parcal=0    
     DO i=1,n_par
-        IF (flag_par(i)==.true.) THEN
+        IF (flag_par(i) .eqv. .true.) THEN
             n_parcal=n_parcal+1
         END IF
     END DO
@@ -82,8 +167,8 @@ IF (run .eq. 'PSO' .or. run .eq. 'LATHYP') THEN
     	
     ! write parameters
     OPEN(unit=2,file=TRIM(folder)//'/parameters.txt',status='unknown',action='write')
-    WRITE(2,'(<n_par>(F10.5,1x))') (parmin(i),i=1,n_par)
-    WRITE(2,'(<n_par>(F10.5,1x))') (parmax(i),i=1,n_par)
+    WRITE(2,'(*(F10.5,1x))') (parmin(i),i=1,n_par)
+    WRITE(2,'(*(F10.5,1x))') (parmax(i),i=1,n_par)
     CLOSE(2)
     
     IF (log_flag==1) THEN
@@ -160,7 +245,7 @@ END IF openif3
 REWIND(3)
 
 ! allocation + replication of the 1st year
-WRITE(*,1001)  n_tot/365.25,TRIM(period)
+WRITE(*,1001)  n_tot/365.25,TRIM(ADJUSTL(period))
 1001 FORMAT('There are ',f4.1,' years for ', a12)
 
 IF (p=='v' .and. n_tot .lt. 365) THEN
@@ -181,7 +266,7 @@ ALLOCATE(delta(n_tot),stat=status)
 
 DO i=366,n_tot
 	READ(3,*) (date(i,j),j=1,3),Tair(i),Twat_obs(i)
-	IF (Twat_obs(i) .lt. 0 .and. Twat_obs(i) .ne. -999)
+	IF (Twat_obs(i) .lt. 0 .and. Twat_obs(i) .ne. -999) THEN
 	    Twat_obs(i)=0.0d0
 	END IF
 END DO

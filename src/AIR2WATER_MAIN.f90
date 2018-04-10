@@ -2,8 +2,9 @@ PROGRAM air2water
 
 USE commondata
 IMPLICIT NONE
-INTEGER :: i,j,k,status
+INTEGER :: status
 REAL(KIND=8):: T1,T2
+
 
 WRITE(*,*) '       .__       ________                  __                '
 WRITE(*,*) '_____  |__|______\_____  \__  _  _______ _/  |_  ___________ '
@@ -12,9 +13,9 @@ WRITE(*,*) ' / __ \|  ||  | \/       \ \     /  / __ \|  | \  ___/|  | \/'
 WRITE(*,*) '(____  /__||__|  \_______ \ \/\_/  (____  /__|  \___  >__|   '
 WRITE(*,*) '     \/                  \/             \/          \/       '
 WRITE(*,*) 'Version 2.0.0 - January 2017'
-WRITE(*,*) 
-WRITE(*,*) 
-WRITE(*,*) 
+WRITE(*,*)
+WRITE(*,*)
+WRITE(*,*)
 !-------------------------------------------------------------------------------------
 !
 ! Provided by Sebastiano Piccolroaz and Marco Toffolon
@@ -25,18 +26,18 @@ WRITE(*,*)
 ! How to cite:
 !
 ! Piccolroaz S., M. Toffolon, and B. Majone (2013), A simple lumped model to convert
-! air temperature into surface water temperature in lakes, Hydrol. Earth Syst. Sci., 
+! air temperature into surface water temperature in lakes, Hydrol. Earth Syst. Sci.,
 ! 17, 3323-3338, doi:10.5194/hess-17-3323-2013
 !
-! Toffolon M., S. Piccolroaz, B. Majone, A.M. Soja, F. Peeters, M. Schmid and A. Wüest 
-! (2014), Prediction of surface water temperature from air temperature in lakes with 
+! Toffolon M., S. Piccolroaz, B. Majone, A.M. Soja, F. Peeters, M. Schmid and A. Wüest
+! (2014), Prediction of surface water temperature from air temperature in lakes with
 ! different morphology, Limnology and Oceanography, 59(6), 2185-2202, doi: 10.4319/lo.2014.59.6.2185
-! 
+!
 ! Piccolroaz S., M. Toffolon, and B. Majone (2015), The role of stratification on lakes’ thermal
 ! response: The case of Lake Superior, Water Resources Research, 51(10):7878–7894,
 ! DOI:10.1002/2014WR016555
 !
-! Piccolroaz S. (2016), Prediction of lake surface temperature using the air2water model: 
+! Piccolroaz S. (2016), Prediction of lake surface temperature using the air2water model:
 ! guidelines, challenges, and future perspectives, Advances in Oceanography and Limnology,
 ! 7:36-50, DOI: http://dx.doi.org/10.4081/aiol.2016.5791
 !-------------------------------------------------------------------------------------
@@ -44,13 +45,16 @@ WRITE(*,*)
 CALL CPU_TIME(T1)
 
 ! allocation of parameter matrices
-ALLOCATE(parmin(n_par),stat=status) 
-ALLOCATE(parmax(n_par),stat=status) 
-ALLOCATE(flag_par(n_par),stat=status) 
-ALLOCATE(par(n_par),stat=status) 
-ALLOCATE(par_best(n_par),stat=status) 
+ALLOCATE(parmin(n_par),stat=status)
+ALLOCATE(parmax(n_par),stat=status)
+ALLOCATE(flag_par(n_par),stat=status)
+ALLOCATE(par(n_par),stat=status)
+ALLOCATE(par_best(n_par),stat=status)
 
-! lettura dati in input
+! parsing command arguments
+CALL parse_command_args
+
+! reading input file
 CALL read_calibration
 
 ! aggregate calibration data on the basis of time_res
@@ -82,5 +86,7 @@ CALL forward
 CALL CPU_TIME(T2)
 print *, 'Computation time was ', T2-T1, 'seconds.'
 
+!it is time to go
+CALL print_ByeBye
 STOP
 END PROGRAM air2water

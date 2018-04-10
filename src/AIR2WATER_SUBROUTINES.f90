@@ -409,12 +409,12 @@ WRITE(*,*) 'Calibration: objective function', ABS(ei_check)
 IF (ABS(ei_check - finalfit) .gt. 0.0001) THEN
 	    WRITE(*,*) 'Errore efficienza in forward'
 	    WRITE(*,*) ei_check, finalfit
-	    PAUSE
+	    !PAUSE
 ELSE
     WRITE(*,*) 'Check completed'
 END IF
     
-WRITE(11,'(<n_par>(f10.6,1x))') (par_best(i),i=1,n_par)
+WRITE(11,'(*(f10.6,1x))') (par_best(i),i=1,n_par)
 WRITE(11,'(f10.6)') ABS(ei_check)
     	
 OPEN(UNIT=12,FILE=TRIM(folder)//'/2_'//TRIM(run)//'_'//fun_obj//'_'//TRIM(station)//'_'//series//'c_'//TRIM(time_res)//'.out',STATUS='unknown',ACTION='write')
