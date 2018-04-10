@@ -12,6 +12,7 @@ RETURN
 END SUBROUTINE
 
 SUBROUTINE print_ByeBye
+    WRITE(*,*)''
     WRITE(*,*)"***************************************************************************"
     WRITE(*,*)"*   that's it! (mailto: s.piccolroaz@unitn.it, marco.toffolon@unitn.it)   *"
     WRITE(*,*)"***************************************************************************"
