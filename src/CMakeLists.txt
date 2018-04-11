@@ -23,7 +23,7 @@ endif()
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
     set(CMAKE_Fortran_FLAGS         "${CMAKE_Fortran_FLAGS} -cpp -Wall")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-Ofast -march=native")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-Ofast -ffast-math -march=native")
 endif()
 
 # we set default to Release build type
