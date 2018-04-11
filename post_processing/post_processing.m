@@ -31,7 +31,7 @@ runmode='PSO';
 toll=2;  % minimum efficiency index used to make the dotty plots (maximum if index = RMS)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-cd ..
+cd
 set(0,'defaulttextfontname','Times New Roman','defaultaxesfontname','Times New Roman',...
     'defaulttextfontsize',10,'defaultaxesfontsize',10);
 % Figures are produced using a colorblind barrier-free color pallet (jfly.iam.u-tokyo.ac.jp/color/)
@@ -65,7 +65,7 @@ else
 end
 
 disp('Warning: processing the dotty plot figure may take a few minutes depending on the number of points')
-dp_flag=input('Do you want to continue with the figure (0=N, 1=Y)?'); 
+dp_flag=input('Do you want to continue with the figure (0=N, 1=Y)?');
 
 if dp_flag
 	figure; hold on
@@ -117,7 +117,7 @@ if exist([folder file_val],'file')
     T_val(T_val==-999)=NaN;
     date_val=datenum([T_val(:,1:3)]);
     RMSE_val=sqrt(nanmean((T_val(:,5)-T_val(:,6)).^2));
-    
+
     figure
     plot(date_val,T_val(:,4),'.','color',light_blue); hold on
     plot(date_val,T_val(:,5),'.','color',blue);

@@ -1,9 +1,9 @@
-       .__       ________                  __                
-_____  |__|______\_____  \__  _  _______ _/  |_  ___________ 
+       .__       ________                  __
+_____  |__|______\_____  \__  _  _______ _/  |_  ___________
 \__  \ |  \_  __ \/  ____/\ \/ \/ /\__  \\   __\/ __ \_  __ \
  / __ \|  ||  | \/       \ \     /  / __ \|  | \  ___/|  | \/
-(____  /__||__|  \_______ \ \/\_/  (____  /__|  \___  >__|   
-     \/                  \/             \/          \/       
+(____  /__||__|  \_______ \ \/\_/  (____  /__|  \___  >__|
+     \/                  \/             \/          \/
 A model to predict Lake Surface Temperature (LST) using air temperature.
 Version 2.0.0 - January 2017
 
@@ -27,7 +27,7 @@ How to cite:
 What is new in air2water Version 2.0.0
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 In this new release, the main improvement concerns:
-- Users can now choose among Euler, Runge-Kutta 2nd order, Runge-Kutta 4th order, and Crank-Nicolson numerical schemes to solve the air2water model. 
+- Users can now choose among Euler, Runge-Kutta 2nd order, Runge-Kutta 4th order, and Crank-Nicolson numerical schemes to solve the air2water model.
   The first three schemes are explicit, and in summer, when δ→0, it may happen that a daily time step is too large to adequately integrate the equation of the model, possibly generating numerical instabilities. In order to avoid this situation, an adaptive sub-stepping procedure has been implemented to avoid numerical instabilities when using Runge-Kutta and forward Euler numerical schemes. 
   The last numerical scheme is implicit, 2nd order accurate, and unconditionally stable: a sub-stepping procedure is not required and the daily time step is used for the whole simulation, making it generally faster (but less accurate than Runge-Kutta 4th order) than the previous schemes.
 - A new pre-processor is available for evaluating the a-priori range of variation of parameters given the mean depth of a lake.
@@ -35,8 +35,8 @@ In this new release, the main improvement concerns:
 !!!!!!!!!!!!!!!
 IMPORTANT NOTE: do not change the encoding of input files. They must be ANSI text files. UTF-8 encoded files cannot be read. I suggest using a simple text editor as Notepad++.
 !!!!!!!!!!!!!!!
- 
-How to use air2water 
+
+How to use air2water
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 0. Preamble
 The model is presented and discussed in Piccolroaz et al. (2013) and in Piccolroaz (2016).

@@ -31,7 +31,7 @@ bb=0.97;
 min_alphac=3; max_alphac=15; delta=max_alphac-min_alphac;
 alphac=min_alphac:delta/n:max_alphac;
 
-Kelvin0=273.15 + Temperatura_rif;	
+Kelvin0=273.15 + Temperatura_rif;
 
 min_Delta_alphac=0.1; max_Delta_alphac=15; delta=max_Delta_alphac-min_Delta_alphac;
 Delta_alphac=min_Delta_alphac:delta/n:max_Delta_alphac;
@@ -47,13 +47,13 @@ DT=min_DT:delta/n:max_DT;
 
 for i=1:n+1
 	for j=1:n+1
-		ew_par(i,j)=6.112*exp(Temperatura_rif(i)*17.67/(Temperatura_rif(i)+243.5)); %* ...	
+		ew_par(i,j)=6.112*exp(Temperatura_rif(i)*17.67/(Temperatura_rif(i)+243.5)); %* ...
 		%(1+17.67*243.5/(Temperatura_rif(i)+243.5)^2*(TW(j)-Temperatura_rif(i)));
 	end
 end
 ew=[max(0,min(min(ew_par))) max(max(ew_par))];
 
-alphae=alphac/0.61;          
+alphae=alphac/0.61;
 
 Delta_alphae = Delta_alphac;
 
