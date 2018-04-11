@@ -53,9 +53,9 @@ The code is provided with an example test case. The study site is Lake Superior 
 
 1. `input.txt` to be located in the same folder of the executable file. This file contains the input information:
 
+~~~
     ! Input file
     Superior        ! name of the lake
-    
     stndrck         ! name/ID of the air temperature station
     sat             ! name/ID of the water temperature station
     c               ! type of series: c=continuous series, m=mean year
@@ -67,18 +67,21 @@ The code is provided with an example test case. The study site is Lake Superior 
     PSO             ! run mode: PSO (Particle Swarm Optimization), LATHYP (Latin Hypercube), RANSAM (Random Sampling), or FORWARD
     0.60            ! minimum percentage of data: 0...1. E.g., when using 1m time resolution, the monthly average is set to NaN if available data during one month are less than this percentage (60% in this case)
     2000            ! n_run: number of iterations
-    $-$999          ! minimum efficiency index (i.e., RMS, NSE, KGE). All model realization with efficiency index greater than this threshold are saved in file 0_...
+    -999            ! minimum efficiency index (i.e., RMS, NSE, KGE). All model realization with efficiency index greater than this threshold are saved in file 0_...
     1               ! log_flag: 1--> parameters 2 and 3 are searched in a logarithmic space; 0--> parameters 2 and 3 are searched in a linear space
     0.9             ! Courant number
+~~~
 
 2. `PSO.txt`   to be located in the same folder of the executable file of air2water. This file contains the parameters of PSO:
 
+~~~
     ! PSO parameters
     2000            ! number of particles
     2 2         ! c1, c2: constants known as cognitive and social learning factors (used in the equation of motion of particles)
     0.9  0.4    ! inertia max and min (used in the equation of motion of particles)
+~~~
 
->see e.g.:
+see e.g.:
 >* Kennedy, J., and R. Eberhart (1995), Particle swarm optimization, in Proceedings of IEEE International Conference on Neural Networks, pp. 1942-1948, doi:10.1109/ICNN.1995.488968.
 >* Robinson, J., and Y. Rahmat-Samii (2004), Particle swarm optimization in electromagnetics, IEEE T. Antenn. Propag., 52, 397-407, doi:10.1109/TAP.2004.823969.
 
@@ -87,12 +90,14 @@ The code is provided with an example test case. The study site is Lake Superior 
 1. input files for calibration `IDair_IDwater_typeofseriesc.txt` (e.g., stndrck_sat_cc.txt) and validation `IDair_IDwat_typeofseriesv.txt` (e.g., stndrck_sat_cv.txt)
 The two files have 5 columns (year, month, day, air temperature, water temperature):
 
+~~~
     2001        1       1       -0.125      1.000
     2001        1       2        0.158      1.155
     2001        1       3        1.155      -999
     2001        1       4        3.458      -999
     2001        1       5       10.125      3.254
     ...
+~~~
 
 *NOTE: The series of observed air temperature must be complete. It cannot have gaps or no data.
 The series of observed water temperature can contain no-data (-999).
@@ -103,15 +108,19 @@ Both series are always at daily time scale, as the equation of the model is solv
 The file contains the range of variation of each parameter of the model. The range of variation of the parameters can be defined on the basis of physical considerations and is strictly lake dependent, thus its reasonable a priori estimation is crucial to obtain reliable results. The range of parameters can be estimated using the equations presented in the Supplementary Material of Piccolroaz (2016) or, visually, from Figure 3 of the same manuscript. A pre-processing script in matlab is also available to evaluate the a priori physical range of model's parameter (see point 3. Pre-processing).
 The structure of the file 'parameters.txt' is the following:
 
-    $-$0.017   0.00047   0.00069   2   0.005   0   0     0
+~~~
+    -0.017   0.00047   0.00069   2   0.005   0   0     0
     0.100   0.00850   0.02000   6   0.150   1   150   0.5
+~~~
 
 The first line contains the minimum value of each parameters, while the second contains the maximum values. There are 8 columns, as the number of parameters.
 
 3. file `parameters_forward.txt`
 The file contains a set of parameters to be used to run the model in forward mode (required only if the model is run in forward), see 10th line of file input.txt . The structure of the file is as follows:
 
+~~~
     0.000284   0.006668   0.006719   2.888324   0.017322   0.212055 148.709752   0.499891
+~~~
 
 ### Output files
 The model writes the output in a folder called 'output_modelversion' (e.g., output_3) located in the same folder of the input files (e.g., Superior).
@@ -127,6 +136,7 @@ ASCII file that contains the best set of parameters (1st line), the value of the
 3. file `2_PSO_..........   .out`
 ASCII file containing the results of the calibration period. Row represent time and columns are:
 
+~~~
     year
     month
     day
@@ -135,6 +145,7 @@ ASCII file containing the results of the calibration period. Row represent time 
     simulated water temperature
     observed water temperature aggregated at the time scale chosen in file `input.txt` (e.g., 1m)
     simulated water temperature aggregated at the time scale chosen in file `input.txt` (e.g., 1m)
+~~~
 
 Note that the first year is replicated and is used as warm up year to mitigate the influence of initial conditions. During the warm up year, year, month and day are equal to -999.
 
@@ -166,8 +177,6 @@ The figures produced by the post-processing script are:
 ### Important note
 The range of parameters should be carefully checked during the post-processing step through the analysis of the dotty plots: the cloud of points should be centred within the searching domain, and in any case the best set of parameters should be sufficiently far from the upper and lower a-priori bounds. Exceptions are represented by parameters p6 and p7, see Piccolroaz et al. (2013), Toffolon et al. (2014), and Piccolroaz (2016).
 
-Trento, 2 September, 2017
-
-Sebastiano Piccolroaz
-
+Trento, 2 September, 2017\
+Sebastiano Piccolroaz\
 s.piccolroaz@unitn.it
