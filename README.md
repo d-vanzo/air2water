@@ -64,9 +64,9 @@ The code is provided with an example test case. The study site is Lake Superior 
     RMS             ! objective function: RMS (Root Mean Square Error), NSE (Nash-Sutcliffe Efficiency Index), KGE (Kling-Gupta Efficiency Index)
     RK4             ! mod_num : numerical method used to solve the model equation EUL (Euler Explicit), RK2 (Runge-Kutta 2), RK4 (Runge-Kutta 4), CRN (Crank-Nicolson)
     PSO             ! run mode: PSO (Particle Swarm Optimization), LATHYP (Latin Hypercube), RANSAM (Random Sampling), or FORWARD
-    0.60            ! minimum percentage of data: 0...1. E.g., when using 1m time resolution, the monthly average is set to NaN if available data during one month are less than this percentage (60% in this case) 
+    0.60            ! minimum percentage of data: 0...1. E.g., when using 1m time resolution, the monthly average is set to NaN if available data during one month are less than this percentage (60% in this case)
     2000            ! n_run: number of iterations
-    $-$999            ! minimum efficiency index (i.e., RMS, NSE, KGE). All model realization with efficiency index greater than this threshold are saved in file 0_...
+    $-$999          ! minimum efficiency index (i.e., RMS, NSE, KGE). All model realization with efficiency index greater than this threshold are saved in file 0_...
     1               ! log_flag: 1--> parameters 2 and 3 are searched in a logarithmic space; 0--> parameters 2 and 3 are searched in a linear space
     0.9             ! Courant number
 
