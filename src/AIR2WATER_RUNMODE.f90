@@ -1,8 +1,11 @@
+!-------------------------------------------------------------------------------
+!               FORWARD MODE
+!-------------------------------------------------------------------------------
 SUBROUTINE forward_mode
 
 USE commondata
 
-IMPLICIT NONE 
+IMPLICIT NONE
 
 REAL(KIND=8):: eff_index
 
@@ -18,8 +21,6 @@ END SUBROUTINE
 !-------------------------------------------------------------------------------
 !				PSO
 !-------------------------------------------------------------------------------
-
-
 SUBROUTINE PSO_mode
 
 USE commondata
@@ -42,10 +43,10 @@ ALLOCATE (r(2*n_par),gbest(n_par),fit(n_particles),fitbest(n_particles))
 
 ! open file for the writing of all parameter set + efficiency index
 OPEN(unit=10,file=TRIM(folder)//'/0_'//TRIM(run)//'_'//fun_obj//'_'//TRIM(station)//'_'//series//'_'//TRIM(time_res)//'.out',status='unknown',action='write',access='stream', form='unformatted')
- 
-x=0; v=0;  
+
+x=0; v=0;
 r=0
-pbest=0; gbest=0; 
+pbest=0; gbest=0;
 fit=0; fitbest=0
 dw=(wmax-wmin)/n_run
 w=wmax
@@ -65,7 +66,7 @@ DO j=1,n_par
 END DO
 DO k=1,n_particles
     par=x(:,k)                          ! assignment of the parameters set to the particle k
-    
+
    IF (log_flag==1) THEN
         par(2)=DEXP(par(2))
         par(3)=DEXP(par(3))
@@ -74,9 +75,9 @@ DO k=1,n_particles
 !        END IF
         !par(11)=DEXP(par(11))
     END IF
-    
-    CALL sub_1(eff_index)  
-    fit(k)=eff_index                    ! Initialization      
+
+    CALL sub_1(eff_index)
+    fit(k)=eff_index                    ! Initialization
     fitbest(k)=eff_index                ! Initialization
 END DO
 CALL best(fit,k,foptim)                 ! k is the most performing particle
@@ -86,7 +87,7 @@ END DO
 
 ! main loop
 DO i=1,n_run
-    CALL random_seed()      
+    CALL random_seed()
     DO k=1,n_particles
 	    CALL random_number(r)
 	    status=0
@@ -94,32 +95,32 @@ DO i=1,n_run
         DO j=1,n_par
 	        v(j,k)=w*v(j,k)+c1*r(j)*(pbest(j,k)-x(j,k))+c2*r(j+n_par)*(gbest(j)-x(j,k))
             x(j,k)=x(j,k)+v(j,k)
-		
+
 	        ! assorbing wall
 	        IF (x(j,k).gt.parmax(j)) THEN
 	           IF (j==6) THEN
     	            x(j,k)= x(j,k)-FLOOR(x(j,k))
 	             ELSE
 	                x(j,k)= parmax(j)
-	                v(j,k)=0.0          
-                    status=1            
-	            END IF         
+	                v(j,k)=0.0
+                    status=1
+	            END IF
 	        END IF
             IF (x(j,k).lt.parmin(j)) THEN
                 IF (j==6) THEN
     	            x(j,k)= CEILING(ABS(x(j,k)))-ABS(x(j,k))
 	            ELSE
 	                x(j,k)= parmin(j)
-	                v(j,k)=0.0          
-                    status=1 
-                END IF             
+	                v(j,k)=0.0
+                    status=1
+                END IF
             END IF
         END DO
 
         ! Copute the new performace
-        IF (status.eq.0) THEN	
+        IF (status.eq.0) THEN
             par=x(:,k)                          ! assignment of the parameters set to the particle k
-            
+
             IF (log_flag==1) THEN
                 par(2)=DEXP(par(2))
                 par(3)=DEXP(par(3))
@@ -128,8 +129,8 @@ DO i=1,n_run
 !                END IF
                 !par(11)=DEXP(par(11))
             END IF
-            
-            CALL sub_1(eff_index) 
+
+            CALL sub_1(eff_index)
 		    fit(k)=eff_index
 		    ! Write the parameters set + the performance index if the latter is larger than a given threshold
             IF (eff_index .ge. mineff_index) THEN
@@ -139,7 +140,7 @@ DO i=1,n_run
         ELSE
 	        fit(k)=-1e30
         ENDIF
-        
+
         ! Evaluate if particle k improved its performance
         IF (fit(k).gt.fitbest(k)) THEN
 		    fitbest(k)=fit(k)
@@ -148,7 +149,7 @@ DO i=1,n_run
 		    END DO
 	    END IF
     END DO      !cycle k (particles)
-    
+
     ! Evaluate the most performant particle (gbest)
     CALL best(fitbest,k,foptim)
     DO j=1,n_par
@@ -162,7 +163,7 @@ DO i=1,n_run
 		    WRITE(*,1003) REAL(i)/REAL(n_run)*100.
 	    END IF
     END IF
-    
+
     ! If the norm between pbest and gbest is less then tol for the perc percentage of the particles --> exit the cycle
     count=0
     DO k=1,n_particles
@@ -170,7 +171,7 @@ DO i=1,n_run
         DO j=1,n_par
             IF (flag_par(j)) THEN
                 norm=norm+( (pbest(j,k)-gbest(j))/(parmax(j)-parmin(j)) )**2
-            END IF    
+            END IF
         END DO
         norm=SQRT(norm)
         IF (norm .lt. norm_min) THEN           ! 0.001 --> 1 °/oo
@@ -181,7 +182,7 @@ DO i=1,n_run
         WRITE(*,*)  '- Warning:  PSO has been exit'
         EXIT
     END IF
-	
+
 END DO
 
 IF (log_flag==1) THEN
@@ -192,7 +193,7 @@ IF (log_flag==1) THEN
 !    END IF
     !gbest(11)=DEXP(gbest(11))
 END IF
-    
+
 par_best=gbest
 finalfit=foptim
 
@@ -209,8 +210,6 @@ END SUBROUTINE
 !-------------------------------------------------------------------------------
 !				Latin Hypercube
 !-------------------------------------------------------------------------------
-
-
 SUBROUTINE LH_mode
 
 USE commondata
@@ -228,7 +227,7 @@ REAL(KIND=8),ALLOCATABLE,DIMENSION(:)::gbest
 WRITE(*,*) 'N. run = ', n_run
 
 ALLOCATE(gbest(n_par))
-  
+
 foptim=-999
 
 ! open file for the writing of all parameter set + efficiency index
@@ -238,15 +237,15 @@ CALL random_seed()
 
 ! Initialization of matrix permut + permutation (shuffle)
 DO j=1,n_par
-    permut(:,j)= (/ (i, i=1,n_run) /) 
-    CALL Shuffle(permut(:,j),n_run) 
-END DO     
+    permut(:,j)= (/ (i, i=1,n_run) /)
+    CALL Shuffle(permut(:,j),n_run)
+END DO
 
 DO i=1,n_run
     DO j=1,n_par
         CALL random_number(r)
         r=r + (REAL(permut(i,j))-1.0)
-        r=r/REAL(n_run) 
+        r=r/REAL(n_run)
 
         par(j)=parmin(j) + (parmax(j)-parmin(j))*r
     END DO
@@ -259,28 +258,28 @@ DO i=1,n_run
 !        END IF
         !par(11)=DEXP(par(11))
     END IF
-    
+
     CALL sub_1(eff_index)
     fit=eff_index
-    
+
     ! Write the parameters set + the performance index if the latter is larger than a given threshold
     IF (eff_index .ge. mineff_index) THEN
         ii=ii+1
         WRITE(10)(par(j),j=1,n_par),eff_index
     END IF
-                
+
     IF (fit .gt. foptim) THEN
         foptim=fit
         gbest=par
-    END IF        
-        
+    END IF
+
     IF (i>=10) THEN
 	    IF (MOD(i,INT(REAL(n_run)/10))==0 ) THEN
 		    WRITE(*,1003) REAL(i)/REAL(n_run)*100.
 	    END IF
     END IF
-           
-END DO            
+
+END DO
 
 par_best=gbest
 finalfit=foptim
@@ -294,11 +293,9 @@ WRITE(*,*) 'Calibration: objective function=', ABS(finalfit)
 RETURN
 END SUBROUTINE
 
-
 !----------------------------------------------------------------------------------------------------------------------------
+!           SHUFFLE
 !----------------------------------------------------------------------------------------------------------------------------
-
- 
 SUBROUTINE Shuffle(a,n)
 
 IMPLICIT NONE
@@ -315,9 +312,4 @@ DO i = n, 2, -1
     a(i) = temp
 END DO
 
-END SUBROUTINE Shuffle
-
-
-!----------------------------------------------------------------------------------------------------------------------------
-!----------------------------------------------------------------------------------------------------------------------------
-
+END SUBROUTINE

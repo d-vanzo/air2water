@@ -5,7 +5,6 @@ IMPLICIT NONE
 INTEGER :: status
 REAL(KIND=8):: T1,T2
 
-
 WRITE(*,*) '       .__       ________                  __                '
 WRITE(*,*) '_____  |__|______\_____  \__  _  _______ _/  |_  ___________ '
 WRITE(*,*) '\__  \ |  \_  __ \/  ____/\ \/ \/ /\__  \\   __\/ __ \_  __ \'
@@ -13,9 +12,10 @@ WRITE(*,*) ' / __ \|  ||  | \/       \ \     /  / __ \|  | \  ___/|  | \/'
 WRITE(*,*) '(____  /__||__|  \_______ \ \/\_/  (____  /__|  \___  >__|   '
 WRITE(*,*) '     \/                  \/             \/          \/       '
 WRITE(*,*) 'Version 2.0.0 - January 2017'
-WRITE(*,*)
-WRITE(*,*)
-WRITE(*,*)
+WRITE(*,*) ''
+WRITE(*,*) ''
+WRITE(*,*) ''
+
 !-------------------------------------------------------------------------------------
 !
 ! Provided by Sebastiano Piccolroaz and Marco Toffolon
@@ -80,7 +80,7 @@ OPEN(UNIT=99,FILE=TRIM(folder)//'/00_'//TRIM(run)//'_'//fun_obj//'_'//TRIM(stati
 WRITE(99,*) ii
 CLOSE(99)
 
-! lancio in forward con il set di parametri migliore  
+! lancio in forward con il set di parametri migliore
 CALL forward
 
 CALL CPU_TIME(T2)

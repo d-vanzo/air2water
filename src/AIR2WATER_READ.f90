@@ -1,3 +1,6 @@
+!-------------------------------------------------------------------------------
+!               PRINT HELP
+!-------------------------------------------------------------------------------
 SUBROUTINE print_Help
     WRITE(*,*)''
     WRITE(*,*)'usage:'
@@ -11,6 +14,9 @@ SUBROUTINE print_Help
 RETURN
 END SUBROUTINE
 
+!-------------------------------------------------------------------------------
+!               PRINT BYE BYE
+!-------------------------------------------------------------------------------
 SUBROUTINE print_ByeBye
     WRITE(*,*)''
     WRITE(*,*)"***************************************************************************"
@@ -18,7 +24,6 @@ SUBROUTINE print_ByeBye
     WRITE(*,*)"***************************************************************************"
 RETURN
 END SUBROUTINE
-
 
 !-------------------------------------------------------------------------------
 !               PARSE COMMAND DATA
@@ -64,19 +69,11 @@ IF (knownArg .eqv. .false.) THEN
     STOP
 ENDIF
 
-! DO i = 1, cnt
-!     CALL get_command_argument (i, c, len, status)
-!     IF (status .ne. 0) THEN
-!         WRITE (*,*) 'get_command_argument failed: status = ', status, ' arg = ', i
-!         STOP
-!     END IF
-!         WRITE (*,*) 'command arg ', i, ' = ', c (1:len)
-! END DO
-
 RETURN
-END
+END SUBROUTINE
+
 !-------------------------------------------------------------------------------
-!				SETUP OF THE CALIBRATION 
+!               SETUP OF THE CALIBRATION
 !-------------------------------------------------------------------------------
 SUBROUTINE read_calibration
 
@@ -86,11 +83,11 @@ USE commondata
 IMPLICIT NONE
 INTEGER:: i, j, status
 CHARACTER(LEN=1) :: string
-LOGICAL:: result          ! necessario per il comando makedirqq
+!LOGICAL:: result          ! necessario per il comando makedirqq
 
 ! read input information
 OPEN(unit=1,file=inputfile,status='old',action='read')
-READ(1,*)		! header
+READ(1,*)   ! header
 READ(1,*) name
 READ(1,*) air_station
 READ(1,*) water_station
@@ -118,65 +115,63 @@ folder = TRIM(name)//'/output_'//TRIM(version)//'/'
 #else
   call system('mkdir -p ' // folder)
 #endif
-
-
 !result=makedirqq(folder)
-    
+
 WRITE(*,*) 'Objective function ',fun_obj
 
 IF (run .eq. 'FORWARD') THEN
-    OPEN(unit=1,file=TRIM(name)//'/parameters_forward.txt',status='old',action='read')    
-    READ(1,*) (par(i), i=1,n_par)  
-ELSE IF (run .eq. 'PSO') THEN    
+    OPEN(unit=1,file=TRIM(name)//'/parameters_forward.txt',status='old',action='read')
+    READ(1,*) (par(i), i=1,n_par)
+ELSE IF (run .eq. 'PSO') THEN
     ! read PSO parameters
     OPEN(unit=1,file='PSO.txt',status='old',action='read')
-    READ(1,*)		    ! header
+    READ(1,*)           ! header
     READ(1,*) n_particles
     READ(1,*) c1,c2
     READ(1,*) wmax,wmin
     CLOSE(1)
 END IF
 
-IF (run .eq. 'PSO' .or. run .eq. 'LATHYP') THEN    
+IF (run .eq. 'PSO' .or. run .eq. 'LATHYP') THEN
     ! read model parameters
     OPEN(unit=1,file=TRIM(name)//'/parameters.txt',status='old',action='read')
 
-    READ(1,*) (parmin(i),i=1,n_par);	
-    READ(1,*) (parmax(i),i=1,n_par);	
+    READ(1,*) (parmin(i),i=1,n_par);
+    READ(1,*) (parmax(i),i=1,n_par);
 
     ! parameters that are not used are zeroed
     flag_par=.true.
     IF (version == '1') THEN            ! air2water 4 parameters
-		parmin(5)=0;     parmax(5)=0;     flag_par(5)=.false.;
-	    parmin(6)=0;	 parmax(6)=0;     flag_par(6)=.false.;
-    	parmin(7)=0;     parmax(7)=0;     flag_par(7)=.false.;
-        parmin(8)=0; 	 parmax(8)=0;     flag_par(8)=.false.;
+        parmin(5)=0;     parmax(5)=0;     flag_par(5)=.false.;
+        parmin(6)=0;     parmax(6)=0;     flag_par(6)=.false.;
+        parmin(7)=0;     parmax(7)=0;     flag_par(7)=.false.;
+        parmin(8)=0;     parmax(8)=0;     flag_par(8)=.false.;
     ELSEIF (version == '2') THEN        ! air2water 6 parameters
-    	parmin(7)=0;     parmax(7)=0;     flag_par(7)=.false.;
-        parmin(8)=0; 	 parmax(8)=0;     flag_par(8)=.false.; 
+        parmin(7)=0;     parmax(7)=0;     flag_par(7)=.false.;
+        parmin(8)=0;     parmax(8)=0;     flag_par(8)=.false.; 
     END IF
-        
-    n_parcal=0    
+
+    n_parcal=0
     DO i=1,n_par
         IF (flag_par(i) .eqv. .true.) THEN
             n_parcal=n_parcal+1
         END IF
     END DO
     norm_min=SQRT(n_parcal*0.01)   ! 0.01 --> 1%
-    
+
     CLOSE(1)
-    	
+
     ! write parameters
     OPEN(unit=2,file=TRIM(folder)//'/parameters.txt',status='unknown',action='write')
     WRITE(2,'(*(F10.5,1x))') (parmin(i),i=1,n_par)
     WRITE(2,'(*(F10.5,1x))') (parmax(i),i=1,n_par)
     CLOSE(2)
-    
+
     IF (log_flag==1) THEN
         parmin(2)=DLOG(parmin(2)); parmax(2)=DLOG(parmax(2));
         parmin(3)=DLOG(parmin(3)); parmax(3)=DLOG(parmax(3));
     END IF
-    
+
 END IF
 
 ! Limits for numerical stability
@@ -191,10 +186,10 @@ END IF
 CALL read_Tseries('c')
 
 RETURN
-END
+END SUBROUTINE
 
 !-------------------------------------------------------------------------------
-!				SETUP OF THE VALIDATION
+!               SETUP OF THE VALIDATION
 !-------------------------------------------------------------------------------
 SUBROUTINE read_validation
 
@@ -209,10 +204,10 @@ DEALLOCATE(I_pos, I_inf)
 CALL read_Tseries('v')
 
 RETURN
-END
+END SUBROUTINE
 
 !-------------------------------------------------------------------------------
-!				READ TEMPERATURE SERIES
+!               READ TEMPERATURE SERIES
 !-------------------------------------------------------------------------------
 SUBROUTINE read_Tseries(p)
 
@@ -235,13 +230,13 @@ END IF
 
 OPEN(unit=3,file=TRIM(name)//'/'//TRIM(station)//'_'//series//p//'.txt',status='unknown',action='read', iostat=status)
 openif3: IF (status==0) THEN
-	readloop3: DO
-		READ(3,*,iostat=status)
-		IF (status/=0) EXIT
-		n_tot=n_tot+1
-	END DO readloop3
-	readif3: IF(status>0) THEN
-	END IF readif3	
+    readloop3: DO
+        READ(3,*,iostat=status)
+        IF (status/=0) EXIT
+        n_tot=n_tot+1
+    END DO readloop3
+    readif3: IF(status>0) THEN
+    END IF readif3
 END IF openif3
 REWIND(3)
 
@@ -258,18 +253,18 @@ n_year=CEILING(n_tot/365.25)
 n_tot=n_tot+365             ! the 1st year is replicated. The 1st year is always considered 365 days long
 ALLOCATE(date(n_tot,3),stat=status)
 ALLOCATE(Tair(n_tot),stat=status)
-ALLOCATE(Twat_obs(n_tot),stat=status) 
-ALLOCATE(Twat_obs_agg(n_tot),stat=status) 
-ALLOCATE(Twat_mod(n_tot),stat=status) 
-ALLOCATE(Twat_mod_agg(n_tot),stat=status) 
+ALLOCATE(Twat_obs(n_tot),stat=status)
+ALLOCATE(Twat_obs_agg(n_tot),stat=status)
+ALLOCATE(Twat_mod(n_tot),stat=status)
+ALLOCATE(Twat_mod_agg(n_tot),stat=status)
 ALLOCATE(tt(n_tot),stat=status)
-ALLOCATE(delta(n_tot),stat=status) 
+ALLOCATE(delta(n_tot),stat=status)
 
 DO i=366,n_tot
-	READ(3,*) (date(i,j),j=1,3),Tair(i),Twat_obs(i)
-	IF (Twat_obs(i) .lt. 0 .and. Twat_obs(i) .ne. -999) THEN
-	    Twat_obs(i)=0.0d0
-	END IF
+    READ(3,*) (date(i,j),j=1,3),Tair(i),Twat_obs(i)
+    IF (Twat_obs(i) .lt. 0 .and. Twat_obs(i) .ne. -999) THEN
+        Twat_obs(i)=0.0d0
+    END IF
 END DO
 date(1:365,:)=-999
 Tair(1:365)=Tair(366:730)
@@ -307,5 +302,5 @@ DO i=1,n_year
 END DO
 
 
-100 RETURN 
-END
+100 RETURN
+END SUBROUTINE

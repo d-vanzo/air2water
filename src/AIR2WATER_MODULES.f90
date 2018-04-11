@@ -1,6 +1,6 @@
 MODULE commondata
 IMPLICIT NONE
-SAVE 
+SAVE
 
 INTEGER, PARAMETER :: n_par = 8
 REAL(KIND=8), PARAMETER :: pi = ACOS(0.d0)*2.d0

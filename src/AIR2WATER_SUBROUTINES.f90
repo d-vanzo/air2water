@@ -1,5 +1,5 @@
 !-------------------------------------------------------------------------------
-!				sub_1
+!               sub_1
 !-------------------------------------------------------------------------------
 SUBROUTINE sub_1(ei)
 USE commondata
@@ -12,15 +12,15 @@ REAL(KIND=8) :: ind, TSS, mean_mod_ymo,mean_obs_ymo
 
 ! air2water
 CALL model
-	
+
 ! Evaluate the objective function
 CALL funcobj(ei)
 
 RETURN
-END
+END SUBROUTINE
 
 !-------------------------------------------------------------------------------
-!				AIR2WATER
+!               AIR2WATER
 !-------------------------------------------------------------------------------
 SUBROUTINE model
 USE commondata
@@ -38,91 +38,92 @@ REAL(KIND=8) :: Tairk, Tairk1, Twatk, ttk
 REAL(KIND=8) :: alpha, d1, d2, A, B
 
 Tmin=MAX(0.0d0,MINVAL(Twat_obs))
-Tmin=MAX(4.d0,Tmin)	! Tmin
+Tmin=MAX(4.d0,Tmin) ! Tmin
 
-IF (Twat_obs(1)==-999) THEN	! Condizione iniziale
-	Twat_mod(1)=Tmin
+IF (Twat_obs(1)==-999) THEN ! Condizione iniziale
+    Twat_mod(1)=Tmin
 ELSE
-	Twat_mod(1)=Twat_obs(1)
+    Twat_mod(1)=Twat_obs(1)
 END IF
 
 IF (num_mod .eq. 'CRN') THEN
     dt = 1.0d0
     ttt = DoY
 END IF
-        
+
 DO j=1,n_tot-1
 
     IF (num_mod .eq. 'CRN') THEN
-        CALL a2w(Tair(j), Twat_mod(j), tt(j), K1, DD, pp)  
+        CALL a2w(Tair(j), Twat_mod(j), tt(j), K1, DD, pp)
         delta(j)=DD
         Twatk=( Twat_mod(j)*2.0d0*DD +                     &
         dt*( pp + par(1) + par(2)*Tair(j+1) + par(5)*cos(2.d0*pi*(tt(j)+ttt-par(6))) ) ) &
-        /(2.0d0*DD+dt*par(3)) ;                                    	
-        Twatk=MAX(Twatk,Tice_cover)                
+        /(2.0d0*DD+dt*par(3)) ;
+        Twatk=MAX(Twatk,Tice_cover)
     ELSE
         ! Substepping procedure
         CALL a2w(Tair(j), Twat_mod(j), tt(j), K1, DD, pp)
         DD=MAX(DD,0.01d0)
         lambda=(pp/par(4) - par(3))/DD
-        pp=-LIM/lambda    
+        pp=-LIM/lambda
         IF (lambda .le. 0.0d0 .and. pp .lt. 1.0d0) THEN
             nsub=CEILING(1.0d0/pp)
             nsub=MIN(100,nsub)
-            dt=1.0d0/nsub           
+            dt=1.0d0/nsub
         ELSE
             dt=1.0d0
-            nsub=1 
-        END IF  
+            nsub=1
+        END IF
         dTair=(Tair(j+1)-Tair(j))/DBLE(nsub)
         ttt = DoY/DBLE(nsub)
-            
-	    Twatk=Twat_mod(j)
-	    DO k=1,nsub ! Substepping cycle		
-	        Tairk = Tair(j) + dTair*DBLE(k-1)
-	        Tairk1= Tairk + dTair
-	        ttk=tt(j) + ttt*DBLE(k-1)
-    	    	    		
-	        IF (num_mod .eq. 'RK4') THEN
-	            CALL a2w(Tairk, Twatk, ttk, K1, DD, pp)
-	            delta(j)=DD
-	            CALL a2w(0.5d0*(Tairk + Tairk1), Twatk + 0.5d0*K1, ttk + 0.5*ttt, K2, DD, pp)
-	            CALL a2w(0.5d0*(Tairk + Tairk1), Twatk + 0.5d0*K2, ttk + 0.5*ttt, K3, DD, pp)
-	            CALL a2w(Tairk1, Twatk + K3, ttk + ttt, K4, DD, pp)
+
+        Twatk=Twat_mod(j)
+        DO k=1,nsub ! Substepping cycle
+            Tairk = Tair(j) + dTair*DBLE(k-1)
+            Tairk1= Tairk + dTair
+            ttk=tt(j) + ttt*DBLE(k-1)
+
+            IF (num_mod .eq. 'RK4') THEN
+                CALL a2w(Tairk, Twatk, ttk, K1, DD, pp)
+                delta(j)=DD
+                CALL a2w(0.5d0*(Tairk + Tairk1), Twatk + 0.5d0*K1, ttk + 0.5*ttt, K2, DD, pp)
+                CALL a2w(0.5d0*(Tairk + Tairk1), Twatk + 0.5d0*K2, ttk + 0.5*ttt, K3, DD, pp)
+                CALL a2w(Tairk1, Twatk + K3, ttk + ttt, K4, DD, pp)
 
                 Twatk=Twatk + 1.0d0/6.0d0*(K1 + 2.0d0*K2 + 2.0d0*K3 + K4 )*dt
             ELSEIF (num_mod .eq. 'RK2') THEN
-	            CALL a2w(Tairk, Twatk, ttk, K1, DD, pp)
-	            delta(j)=DD
-	            CALL a2w(Tairk1, Twatk + K1, ttk + ttt, K2, DD, pp)
-            	
+                CALL a2w(Tairk, Twatk, ttk, K1, DD, pp)
+                delta(j)=DD
+                CALL a2w(Tairk1, Twatk + K1, ttk + ttt, K2, DD, pp)
+
                 Twatk=Twatk + 0.5d0*(K1 + K2)*dt
             ELSEIF (num_mod .eq. 'EUL') THEN
-	            CALL a2w(0.5d0*(Tairk + Tairk1), Twatk, ttk, K1, DD, pp)
-	            delta(j)=DD
-            	
-	            Twatk=Twatk + K1*dt                    	    
-	        ELSE
-	            WRITE(*,*) 'Error in the choice of the numerical model'
-	            STOP
+                CALL a2w(0.5d0*(Tairk + Tairk1), Twatk, ttk, K1, DD, pp)
+                delta(j)=DD
+
+                Twatk=Twatk + K1*dt
+            ELSE
+                WRITE(*,*) 'Error in the choice of the numerical model'
+                STOP
             END IF
-            
+
             Twatk=MAX(Twatk,Tice_cover)
-            
+
         END DO
     END IF
-    
-    Twat_mod(j+1)=Twatk 
+
+    Twat_mod(j+1)=Twatk
     Tmin=MAX(4.d0,MIN(Tmin,Twat_mod(j+1)))
-            
+
 END DO
 
 delta(n_tot) = DD
 
 RETURN
-END
+END SUBROUTINE
+
 !-------------------------------------------------------------------------------
-!				NUMERICAL INTEGRATION
+!               NUMERICAL INTEGRATION
 !-------------------------------------------------------------------------------
 SUBROUTINE a2w(Ta, Tw, time, K, DD, pp)
 
@@ -136,13 +137,13 @@ REAL(KIND=8), INTENT(IN) :: Ta, Tw, time
 
 
 IF (Tw>=Tmin) THEN
-	DD=DEXP( -(Tw-Tmin)/par(4) );	
+    DD=DEXP( -(Tw-Tmin)/par(4) );
 ELSE
-	IF (version=='3') THEN
-		DD=DEXP( (Tw-Tmin)/par(7) ) + DEXP( -Tw/par(8) );	
+    IF (version=='3') THEN
+        DD=DEXP( (Tw-Tmin)/par(7) ) + DEXP( -Tw/par(8) );
     ELSE
-		DD=1.0d0
-	END IF
+        DD=1.0d0
+    END IF
 END IF
 
 pp = par(1) + par(2)*Ta -  par(3)*Tw + par(5)*COS(2.d0*pi*(time-par(6))) ! Note that if version == '1' par(5)==0
@@ -156,14 +157,14 @@ pp = par(1) + par(2)*Ta -  par(3)*Tw + par(5)*COS(2.d0*pi*(time-par(6))) ! Note 
 !!        DD=-lambda/LIM
 !!    END IF
 !!END IF
-    
-K = pp/DD    
-       
+
+K = pp/DD
+
 RETURN
 END SUBROUTINE
 
 !-------------------------------------------------------------------------------
-!				OBJECTIVE FUNCTION
+!               OBJECTIVE FUNCTION
 !-------------------------------------------------------------------------------
 SUBROUTINE funcobj(ind)
 ! Subroutine per il calcolo della funzione obiettivo della simulazione
@@ -183,27 +184,27 @@ DO i=1,n_dat            ! 1st year = warm-up period
     DO j=I_inf(i,1),I_inf(i,2)
         tmp=tmp+Twat_mod(I_pos(j)) 
     END DO
-    Twat_mod_agg(I_inf(i,3))=tmp/REAL(I_inf(i,2)-I_inf(i,1)+1)    
+    Twat_mod_agg(I_inf(i,3))=tmp/REAL(I_inf(i,2)-I_inf(i,1)+1)
 END DO
-    
+
 IF (fun_obj=='NSE') THEN
     TSS=0.d0
-    DO i=1,n_dat		
-	    TSS=TSS+(Twat_mod_agg(I_inf(i,3))-Twat_obs_agg(I_inf(i,3)))**2
+    DO i=1,n_dat
+        TSS=TSS+(Twat_mod_agg(I_inf(i,3))-Twat_obs_agg(I_inf(i,3)))**2
     END DO
     ind=1.d0-TSS/TSS_obs
 ELSEIF  (fun_obj=='KGE') THEN
     mean_mod=0.0d0
-    DO i=1,n_dat		
-	    mean_mod=mean_mod+Twat_mod_agg(I_inf(i,3))
+    DO i=1,n_dat
+        mean_mod=mean_mod+Twat_mod_agg(I_inf(i,3))
     END DO
     mean_mod=mean_mod/REAL(n_dat)
-    
+
     covar_mod=0.0d0
     TSS_mod=0.0d0
     DO i=1,n_dat
-	    TSS_mod=TSS_mod+(Twat_mod_agg(I_inf(i,3))-mean_mod)**2
-	    covar_mod=covar_mod+(Twat_mod_agg(I_inf(i,3))-mean_mod)*(Twat_obs_agg(I_inf(i,3))-mean_obs)
+        TSS_mod=TSS_mod+(Twat_mod_agg(I_inf(i,3))-mean_mod)**2
+        covar_mod=covar_mod+(Twat_mod_agg(I_inf(i,3))-mean_mod)*(Twat_obs_agg(I_inf(i,3))-mean_obs)
     END DO
     std_mod=DSQRT(TSS_mod/REAL(n_dat-1))
     covar_mod=covar_mod/REAL(n_dat-1)
@@ -211,19 +212,20 @@ ELSEIF  (fun_obj=='KGE') THEN
 ELSEIF  (fun_obj=='RMS') THEN
     TSS=0.d0
     DO i=1,n_dat
-	    TSS=TSS+(Twat_mod_agg(I_inf(i,3))-Twat_obs_agg(I_inf(i,3)))**2
+        TSS=TSS+(Twat_mod_agg(I_inf(i,3))-Twat_obs_agg(I_inf(i,3)))**2
     END DO
-    ind=-DSQRT(TSS/n_dat)        ! sign - --> the calibration procedure maximizes ind.    
+    ind=-DSQRT(TSS/n_dat)        ! sign - --> the calibration procedure maximizes ind.
 ELSEIF  (fun_obj=='XXX') THEN
-	WRITE(*,*) 'XXX non definito'
+    WRITE(*,*) 'XXX non definito'
 ELSE
-	WRITE(*,*) 'Errore nella scelta della f. obiettivo'
+    WRITE(*,*) 'Errore nella scelta della f. obiettivo'
 END IF
 
 RETURN
-END
+END SUBROUTINE
+
 !-------------------------------------------------------------------------------
-!				AGGREGATION
+!               AGGREGATION
 !-------------------------------------------------------------------------------
 SUBROUTINE aggregation
 
@@ -250,7 +252,7 @@ END IF
 ALLOCATE(I_pos(n_tot),stat=status)
 I_pos=-999
 Twat_obs_agg=-999
-n_inf=1   
+n_inf=1
 n_pos=1
 IF (time_res=='1d') THEN    ! daily resolution
     n_units=n_tot-365
@@ -261,13 +263,13 @@ IF (time_res=='1d') THEN    ! daily resolution
             I_inf(n_inf,2)=n_pos
             I_inf(n_inf,3)=i
             I_pos(n_pos)=i
-            Twat_obs_agg(I_inf(n_inf,3))=Twat_obs(i)  
+            Twat_obs_agg(I_inf(n_inf,3))=Twat_obs(i)
             n_inf=n_inf+1
             n_pos=n_pos+1
-        END IF  
+        END IF
     END DO
 ELSEIF (unit=='w') THEN      ! weekly resolution
-    n_days=qty*7      
+    n_days=qty*7
     n_units=CEILING(REAL(n_tot-365)/REAL(n_days))
     ALLOCATE(I_inf(n_units,3))
     I_inf=-999
@@ -287,9 +289,9 @@ ELSEIF (unit=='w') THEN      ! weekly resolution
                 count=count+1
             END IF
         END DO
-        IF (count .ge. n_days*prc) THEN           
+        IF (count .ge. n_days*prc) THEN
             I_inf(n_inf,2)=n_pos-1
-            I_inf(n_inf,3)=pos_tmp  
+            I_inf(n_inf,3)=pos_tmp
             Twat_obs_agg(I_inf(n_inf,3))=tmp/count
             n_inf=n_inf+1
         ELSE
@@ -302,12 +304,12 @@ ELSEIF (unit=='m') THEN      ! monthly resolution
     ALLOCATE(I_inf(n_units,3))
     I_inf=-999
     n_days=0
-    month_curr=-999    
+    month_curr=-999
     count=0
     DO i=366,n_tot
         month=date(i,2)
         IF (month .ne. month_curr) THEN
-            IF (count .ge. n_days*prc .and. i .ne. 366) THEN  
+            IF (count .ge. n_days*prc .and. i .ne. 366) THEN
                 I_inf(n_inf,2)=n_pos-1
                 I_inf(n_inf,3)=i-FLOOR(0.5*n_days)-1
                 Twat_obs_agg(I_inf(n_inf,3))=tmp/count
@@ -315,14 +317,14 @@ ELSEIF (unit=='m') THEN      ! monthly resolution
             ELSE
                 I_pos(n_pos-count:n_pos)=-999
                 n_pos=n_pos-count
-            END IF        
+            END IF
             month_curr=month
-            count=0           
+            count=0
             n_days=1
-            tmp=0.0d0            
+            tmp=0.0d0
         ELSE
             n_days=n_days+1
-        END IF  
+        END IF
         IF (Twat_obs(i) .ne. -999) THEN
             tmp=tmp+Twat_obs(i)
             I_pos(n_pos)=i
@@ -331,7 +333,7 @@ ELSEIF (unit=='m') THEN      ! monthly resolution
         END IF
     END DO
     ! Last month
-    IF (count .ge. n_days*prc) THEN  
+    IF (count .ge. n_days*prc) THEN
         I_inf(n_inf,2)=n_pos-1
         I_inf(n_inf,3)=i-FLOOR(0.5*n_days)-1
         Twat_obs_agg(I_inf(n_inf,3))=tmp/count
@@ -339,7 +341,7 @@ ELSEIF (unit=='m') THEN      ! monthly resolution
     ELSE
         I_pos(n_pos-count:n_pos)=-999
         n_pos=n_pos-count
-    END IF                    
+    END IF
 ELSE
     WRITE(*,*) 'Error: variable time_res'
 END IF
@@ -350,7 +352,7 @@ n_pos=n_pos-1
 I_inf(1,1)=1
 I_inf(2:n_dat,1)=I_inf(1:n_dat-1,2)+1
 ALLOCATE(A(n_units,3),B(n_tot))
-A=I_inf;    
+A=I_inf;
 B=I_pos
 DEALLOCATE(I_inf,I_pos)
 ALLOCATE(I_inf(n_dat,3),I_pos(n_pos))
@@ -359,9 +361,10 @@ I_pos=B(1:n_pos)
 DEALLOCATE(A,B)
 
 RETURN
-END
+END SUBROUTINE
+
 !-------------------------------------------------------------------------------
-!				STATIS
+!               STATIS
 !-------------------------------------------------------------------------------
 SUBROUTINE statis
 ! Subroutine per il calcolo di media, somma degli scarti quadratici e std dei dati
@@ -374,22 +377,22 @@ INTEGER :: i, k, d, status
 
 mean_obs=0.d0
 TSS_obs=0.d0
-DO i=1,n_dat		    
-	mean_obs=mean_obs+Twat_obs_agg(I_inf(i,3))
+DO i=1,n_dat
+    mean_obs=mean_obs+Twat_obs_agg(I_inf(i,3))
 END DO
 mean_obs=mean_obs/REAL(n_dat)
 
-DO i=1,n_dat		
-	TSS_obs=TSS_obs+(Twat_obs_agg(I_inf(i,3))-mean_obs)**2
+DO i=1,n_dat
+    TSS_obs=TSS_obs+(Twat_obs_agg(I_inf(i,3))-mean_obs)**2
 END DO
 
 std_obs=DSQRT(TSS_obs/REAL(n_dat-1))
 
 RETURN
-END
+END SUBROUTINE
 
 !-------------------------------------------------------------------------------
-!				FORWARD
+!               FORWARD
 !-------------------------------------------------------------------------------
 SUBROUTINE forward
 USE commondata
@@ -398,7 +401,7 @@ IMPLICIT NONE
 INTEGER :: i, j
 REAL(KIND=8) :: ei_check,ei
 
-par=par_best		! uso miglior set di paramteri
+par=par_best        ! uso miglior set di paramteri
 
 CALL model
 
@@ -407,19 +410,19 @@ CALL funcobj(ei_check)
 WRITE(*,*) 'Calibration: objective function', ABS(ei_check)
 
 IF (ABS(ei_check - finalfit) .gt. 0.0001) THEN
-	    WRITE(*,*) 'Errore efficienza in forward'
-	    WRITE(*,*) ei_check, finalfit
-	    !PAUSE
+        WRITE(*,*) 'Errore efficienza in forward'
+        WRITE(*,*) ei_check, finalfit
+        !PAUSE
 ELSE
     WRITE(*,*) 'Check completed'
 END IF
-    
+
 WRITE(11,'(*(f10.6,1x))') (par_best(i),i=1,n_par)
 WRITE(11,'(f10.6)') ABS(ei_check)
-    	
+
 OPEN(UNIT=12,FILE=TRIM(folder)//'/2_'//TRIM(run)//'_'//fun_obj//'_'//TRIM(station)//'_'//series//'c_'//TRIM(time_res)//'.out',STATUS='unknown',ACTION='write')
 DO i=1,n_tot
-	WRITE(12,1004) (date(i,j),j=1,3),Tair(i),Twat_obs(i),Twat_mod(i),Twat_obs_agg(i),Twat_mod_agg(i)
+    WRITE(12,1004) (date(i,j),j=1,3),Tair(i),Twat_obs(i),Twat_mod(i),Twat_obs_agg(i),Twat_mod_agg(i)
 END DO
 CLOSE(12)
 
@@ -453,7 +456,7 @@ WRITE(*,*) 'Validation: objective function', ABS(ei)
 
 OPEN(UNIT=13,FILE=TRIM(folder)//'/3_'//TRIM(run)//'_'//fun_obj//'_'//TRIM(station)//'_'//series//'v_'//TRIM(time_res)//'.out',STATUS='unknown',ACTION='write')
 DO i=1,n_tot
-	WRITE(13,1004) (date(i,j),j=1,3),Tair(i),Twat_obs(i),Twat_mod(i),Twat_obs_agg(i),Twat_mod_agg(i)
+    WRITE(13,1004) (date(i,j),j=1,3),Tair(i),Twat_obs(i),Twat_mod(i),Twat_obs_agg(i),Twat_mod_agg(i)
 END DO
 CLOSE(13)
 
@@ -461,15 +464,15 @@ OPEN(UNIT=15,FILE=TRIM(folder)//'/5_'//TRIM(run)//'_'//fun_obj//'_'//TRIM(statio
 DO i=1,n_tot
     WRITE(15,*) delta(i)
 END DO
-CLOSE(15)  
-    
+CLOSE(15)
+
 1004 FORMAT(i4,1x,i4,1x,i4,1x,5(1x,f10.5))
 
 200 RETURN
-END
+END SUBROUTINE
 
 !-------------------------------------------------------------------------------
-!				BEST
+!               BEST
 !-------------------------------------------------------------------------------
 SUBROUTINE best(fit,part,foptim)
 USE commondata
@@ -480,19 +483,19 @@ INTEGER:: k
 REAL(KIND=8),INTENT(IN),DIMENSION(n_particles):: fit
 REAL(KIND=8),INTENT(OUT):: foptim
 
-foptim=-1e30				! valore molto piccolo
+foptim=-1e30                ! valore molto piccolo
 DO k=1,n_particles
     IF(fit(k).gt.foptim) then
-	    foptim=fit(k)
-	    part=k
+        foptim=fit(k)
+        part=k
     END IF
 END DO
 
 RETURN
-END
+END SUBROUTINE
 
 !-------------------------------------------------------------------------------
-!				LEAP YEAR
+!               LEAP YEAR
 !-------------------------------------------------------------------------------
 SUBROUTINE leap_year(Y,I)
 USE commondata
@@ -501,20 +504,20 @@ IMPLICIT NONE
 INTEGER,INTENT(IN) :: Y
 INTEGER,INTENT(OUT) :: I
 
-IF(MOD(Y,100).NE.0.AND.MOD(Y,4).EQ.0) THEN 
+IF(MOD(Y,100).NE.0.AND.MOD(Y,4).EQ.0) THEN
     I=1
 ELSEIF(MOD(Y,400).EQ.0) THEN
     I=1
-ELSE 
+ELSE
     I=0
 END IF
 
 RETURN
-END
+END SUBROUTINE
 
 
 !-------------------------------------------------------------------------------
-!				LINEAR REGRESSION
+!               LINEAR REGRESSION
 !-------------------------------------------------------------------------------
 SUBROUTINE linreg(n,X,Y,m,b,r2)
 IMPLICIT NONE
@@ -543,5 +546,4 @@ r2 = (sumxy - sumx * sumy / n) /                                     &          
                  sqrt((sumx2 - sumx**2/n) * (sumy2 - sumy**2/n))
 r2=r2**2
 RETURN
-END
- 
+END SUBROUTINE
