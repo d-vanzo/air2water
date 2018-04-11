@@ -55,6 +55,7 @@ The code is provided with an example test case. The study site is Lake Superior 
 
     ! Input file
     Superior        ! name of the lake
+    
     stndrck         ! name/ID of the air temperature station
     sat             ! name/ID of the water temperature station
     c               ! type of series: c=continuous series, m=mean year
@@ -166,5 +167,7 @@ The figures produced by the post-processing script are:
 The range of parameters should be carefully checked during the post-processing step through the analysis of the dotty plots: the cloud of points should be centred within the searching domain, and in any case the best set of parameters should be sufficiently far from the upper and lower a-priori bounds. Exceptions are represented by parameters p6 and p7, see Piccolroaz et al. (2013), Toffolon et al. (2014), and Piccolroaz (2016).
 
 Trento, 2 September, 2017
+
 Sebastiano Piccolroaz
+
 s.piccolroaz@unitn.it
